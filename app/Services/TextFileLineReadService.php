@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Actions\ActionInterface;
+use function PHPUnit\Framework\throwException;
 
 class TextFileLineReadService
 {
@@ -16,20 +17,27 @@ class TextFileLineReadService
         $this->memoryLimit = $memoryLimit;
     }
 
-    public function read(): void
+    public function read()
     {
-        $file = fopen($this->filePath, 'r');
-        $words=[];
-        while (($line = fgets($file)) !== false) {
-            $words[] = trim($line);
-            if (memory_get_usage() >= $this->memoryLimit) {
-                $this->process($words);
-                ob_flush();
-                flush();
-                $words = [];
+        try {
+            if (!file_exists($this->filePath)) {
+                throw new \Exception('File not found');
             }
+            $file = fopen($this->filePath, 'r');
+            $words=[];
+            while (($line = fgets($file)) !== false) {
+                $words[] = trim($line);
+                if (memory_get_usage() >= $this->memoryLimit) {
+                    $this->process($words);
+                    ob_flush();
+                    flush();
+                    $words = [];
+                }
+            }
+            $this->process($words);
+        } catch (\Exception $exception) {
+           echo $exception->getMessage();
         }
-        $this->process($words);
     }
 
     private function process(array $words): void

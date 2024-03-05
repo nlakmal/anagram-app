@@ -10,9 +10,6 @@ class AnagramsService
     public function find(string $word): StreamedResponse
     {
         $filePath = storage_path().'/dictionary/anagram.txt';
-        if (!file_exists($filePath)) {
-            abort(404);
-        }
         ini_set('memory_limit', '1024M');
 
         $textStreamService = new TextStreamService(
